@@ -10,12 +10,12 @@ public class PlayerMovement : MonoBehaviour {
 	private bool hasJumped;
 
 	Vector2 velocity;
-	bool grounded;
+	float grounded;
 
 	// Use this for initialization
 	void Start () {
 		velocity = Vector2.zero;
-		grounded = false;
+		grounded = 0f;
 		horizontal = 0f;
 		vertical = 0f;
 		jump = false;
@@ -38,7 +38,7 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	void FixedUpdate() {
-		if (grounded) {
+		if (grounded > 0) {
 			var target = 10f * horizontal;
 			var acceleration = 10f * Time.fixedDeltaTime;
 			if (Mathf.Abs(target - velocity.x) > 4f) {
@@ -46,6 +46,7 @@ public class PlayerMovement : MonoBehaviour {
 			}
 			velocity.x = Mathf.MoveTowards(velocity.x, target, acceleration);
 			if (jump && !hasJumped) {
+				grounded = 0f;
 				velocity.y += 15f;
 				hasJumped = true;
 			}
@@ -62,7 +63,7 @@ public class PlayerMovement : MonoBehaviour {
 
 		transform.position += (Vector3)(velocity * Time.fixedDeltaTime);
 
-		grounded = false;
+		grounded -= Time.fixedDeltaTime;
 		var hitDownLeft = Physics2D.Raycast(transform.position + 0.3f * Vector3.left, Vector2.down, 0.5f);
 		var hitDownRight = Physics2D.Raycast(transform.position + 0.3f * Vector3.right, Vector2.down, 0.5f);
 		if ((hitDownLeft || hitDownRight) && velocity.y <= 0) {
@@ -76,21 +77,21 @@ public class PlayerMovement : MonoBehaviour {
 			}
 			transform.position += new Vector3(0, 0.5f - distance, 0);
 			velocity.y = 0;
-			grounded = true;
+			grounded = 0.1f;
 		}
-		var hitLeft = Physics2D.Raycast(transform.position, Vector2.left, 0.4f);
+		var hitLeft = Physics2D.Raycast(transform.position, Vector2.left, 0.45f);
 		if (hitLeft && velocity.x <= 0) {
-			transform.position += new Vector3(0.4f - hitLeft.distance, 0, 0);
+			transform.position += new Vector3(0.45f - hitLeft.distance, 0, 0);
 			velocity.x = 0;
 		}
-		var hitRight = Physics2D.Raycast(transform.position, Vector2.right, 0.4f);
+		var hitRight = Physics2D.Raycast(transform.position, Vector2.right, 0.45f);
 		if (hitRight && velocity.x >= 0) {
-			transform.position -= new Vector3(0.4f - hitRight.distance, 0, 0);
+			transform.position -= new Vector3(0.45f - hitRight.distance, 0, 0);
 			velocity.x = 0;
 		}
-		var hitTop = Physics2D.Raycast(transform.position, Vector2.up, 0.5f);
+		var hitTop = Physics2D.Raycast(transform.position, Vector2.up, 0.45f);
 		if (hitTop && velocity.y >= 0) {
-			transform.position -= new Vector3(0, 0.5f - hitTop.distance, 0);
+			transform.position -= new Vector3(0, 0.45f - hitTop.distance, 0);
 			velocity.y = 0;
 		}
 	}
