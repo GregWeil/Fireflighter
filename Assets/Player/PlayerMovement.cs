@@ -64,19 +64,10 @@ public class PlayerMovement : MonoBehaviour {
 		transform.position += (Vector3)(velocity * Time.fixedDeltaTime);
 
 		grounded -= Time.fixedDeltaTime;
-		var hitDownLeft = Physics2D.Raycast(transform.position + 0.3f * Vector3.left, Vector2.down, 0.5f);
-		var hitDownRight = Physics2D.Raycast(transform.position + 0.3f * Vector3.right, Vector2.down, 0.5f);
-		if ((hitDownLeft || hitDownRight) && velocity.y <= 0) {
-			var distance = 0f;
-			if (hitDownLeft && hitDownRight) {
-				distance = (hitDownLeft.distance + hitDownRight.distance) / 2f;
-			} else if (hitDownLeft) {
-				distance = hitDownLeft.distance;
-			} else if (hitDownRight) {
-				distance = hitDownRight.distance;
-			}
-			transform.position += new Vector3(0, 0.5f - distance, 0);
-			velocity.y = 0;
+		var hitDown = Physics2D.BoxCast(transform.position, new Vector2(0.5f, 0.1f), 0f, Vector2.down, 0.6f);
+		if (hitDown && velocity.y <= 0 && (hitDown.distance <= 0.45f || grounded > 0f)) {
+			transform.position += new Vector3(0, 0.45f - hitDown.distance, 0);
+			velocity.y = 0f;
 			grounded = 0.1f;
 		}
 		var hitLeft = Physics2D.Raycast(transform.position, Vector2.left, 0.45f);
