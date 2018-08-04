@@ -287,6 +287,7 @@ GameObject:
   - component: {fileID: 181465118}
   - component: {fileID: 181465117}
   - component: {fileID: 181465116}
+  - component: {fileID: 181465120}
   - component: {fileID: 181465119}
   m_Layer: 0
   m_Name: Player
@@ -361,6 +362,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b5b8b11bf980684daa73b196fe6302f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxSpeed: 10
+  acceleration: 12
+  coastAcceleration: 20
+  skidAcceleration: 35
+  airAcceleration: 20
+  jumpSpeed: 14
+  jumpSpeedBonus: 3
+  jumpFloatAcceleration: 30
+  fastFallAcceleration: 10
+  gravityAcceleration: 50
+--- !u!50 &181465120
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 181465115}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 1
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 4
 --- !u!1 &282840810
 GameObject:
   m_ObjectHideFlags: 0
