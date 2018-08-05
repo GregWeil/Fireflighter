@@ -16,11 +16,12 @@ public class PlayerMovement : MonoBehaviour {
 	public float fastFallAcceleration = 10f;
 	public float gravityAcceleration = 50f;
 
+	// Only used for position interpolation
 	private Rigidbody2D body;
 
-	private float horizontal;
-	private float vertical;
-	private bool jump;
+	private float inputHorizontal;
+	private float inputVertical;
+	private bool inputJump;
 	private bool hasJumped;
 
 	private Vector2 velocity;
@@ -31,59 +32,67 @@ public class PlayerMovement : MonoBehaviour {
 		body = GetComponent<Rigidbody2D>();
 		velocity = Vector2.zero;
 		grounded = 0f;
-		horizontal = 0f;
-		vertical = 0f;
-		jump = false;
+		inputHorizontal = 0f;
+		inputVertical = 0f;
+		inputJump = false;
 		hasJumped = false;
 	}
 
+	// Do some math to rescale from 0.2-1 to 0-1
 	private static float GetAxis(string name) {
 		const float min = 0.2f;
 		var value = Input.GetAxis(name);
-		if (Mathf.Abs(value) < min) return 0;
+		if (Mathf.Abs(value) < min) return 0.0f;
 		return Mathf.Sign(value) * (Mathf.Abs(value) - min) * (1.0f / (1.0f - min));
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		horizontal = GetAxis("Horizontal");
-		vertical = GetAxis("Vertical");
-		jump = Input.GetButton("Jump");
-		if (Input.GetButtonUp("Jump")) hasJumped = false;
+		inputHorizontal = GetAxis("Horizontal");
+		inputVertical = GetAxis("Vertical");
+		inputJump = Input.GetButton("Jump");
+		if (Input.GetButtonDown("Jump")) hasJumped = false;
 	}
 
 	void FixedUpdate() {
 		var position = transform.position;
 
 		if (grounded > 0) {
-			var target = maxSpeed * horizontal;
+			// Three accelerations for running, coasting to a stop, and countering movement
+			var target = maxSpeed * inputHorizontal;
 			var accel = acceleration;
-			if (target == 0f) {
+			if (Mathf.Abs(inputHorizontal) < 0.1f) {
 				accel = coastAcceleration;
-			} else if (velocity.x * target < 0f) {
+			} else if (inputHorizontal * velocity.x < 0f) {
 				accel = skidAcceleration;
 				target = 0f;
 			}
 			velocity.x = Mathf.MoveTowards(velocity.x, target, accel * Time.fixedDeltaTime);
-			if (jump && !hasJumped) {
+			
+			// Jumping gets extra height if you are moving quickly
+			if (inputJump && !hasJumped) {
 				grounded = 0f;
 				velocity.y = jumpSpeed + jumpSpeedBonus * Mathf.Abs(velocity.x) / maxSpeed;
 				hasJumped = true;
 			}
 		} else {
-			velocity.x = Mathf.MoveTowards(velocity.x, maxSpeed * horizontal, airAcceleration * Time.fixedDeltaTime);
-			if (jump && velocity.y >= 0) {
+			// Air movement has slow h control, push down for slightly faster fall
+			var target = maxSpeed * inputHorizontal;
+			velocity.x = Mathf.MoveTowards(velocity.x, target, airAcceleration * Time.fixedDeltaTime);
+			if (inputJump && velocity.y >= 0) {
 				velocity.y += jumpFloatAcceleration * Time.fixedDeltaTime;
 			}
-			if (vertical < -0.5) {
-				velocity.y += fastFallAcceleration * vertical * Time.fixedDeltaTime;
+			if (inputVertical < -0.5) {
+				velocity.y += inputVertical * fastFallAcceleration * Time.fixedDeltaTime;
 			}
 		}
+
+		// Apply gravity and motion
 		velocity.y -= gravityAcceleration * Time.fixedDeltaTime;
-
 		position += (Vector3)(velocity * Time.fixedDeltaTime);
-
 		grounded -= Time.fixedDeltaTime;
+
+		// Check for collisions along each axis
 		var hitDown = Physics2D.BoxCast(position, new Vector2(0.5f, 0.1f), 0f, Vector2.down, 0.6f);
 		if (hitDown && velocity.y <= 0 && (hitDown.distance <= 0.45f || grounded > 0f)) {
 			position += new Vector3(0, 0.45f - hitDown.distance, 0);
@@ -106,6 +115,7 @@ public class PlayerMovement : MonoBehaviour {
 			velocity.y = 0;
 		}
 
+		// MovePosition will do interpolation at high framerates for extra smooth rendering
 		body.MovePosition(position);
 	}
 }
