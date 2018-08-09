@@ -288,6 +288,7 @@ GameObject:
   - component: {fileID: 181465117}
   - component: {fileID: 181465116}
   - component: {fileID: 181465120}
+  - component: {fileID: 181465121}
   - component: {fileID: 181465119}
   m_Layer: 0
   m_Name: Player
@@ -371,7 +372,6 @@ MonoBehaviour:
   jumpSpeedBonus: 3
   jumpFloatAcceleration: 30
   fastFallAcceleration: 10
-  gravityAcceleration: 50
 --- !u!50 &181465120
 Rigidbody2D:
   serializedVersion: 4
@@ -392,6 +392,22 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
+--- !u!114 &181465121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 181465115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f42bee6e579c5c4e91d148a38e0851a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputs:
+  - {fileID: 181465119}
+  gravityAcceleration: 50
+  velocity: {x: 0, y: 0}
+  grounded: 0
 --- !u!1 &282840810
 GameObject:
   m_ObjectHideFlags: 0

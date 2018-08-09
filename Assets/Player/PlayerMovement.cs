@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviour {
+public class PlayerMovement : PlayerPhysicsInput {
 
 	public float maxSpeed = 10f;
 	public float acceleration = 12f;
@@ -14,24 +14,14 @@ public class PlayerMovement : MonoBehaviour {
 	public float jumpSpeedBonus = 3f;
 	public float jumpFloatAcceleration = 30f;
 	public float fastFallAcceleration = 10f;
-	public float gravityAcceleration = 50f;
-
-	// Only used for position interpolation
-	private Rigidbody2D body;
 
 	private float inputHorizontal;
 	private float inputVertical;
 	private bool inputJump;
 	private bool hasJumped;
 
-	private Vector2 velocity;
-	private float grounded;
-
 	// Use this for initialization
 	void Start () {
-		body = GetComponent<Rigidbody2D>();
-		velocity = Vector2.zero;
-		grounded = 0f;
 		inputHorizontal = 0f;
 		inputVertical = 0f;
 		inputJump = false;
@@ -54,68 +44,35 @@ public class PlayerMovement : MonoBehaviour {
 		if (Input.GetButtonDown("Jump")) hasJumped = false;
 	}
 
-	void FixedUpdate() {
-		var position = transform.position;
-
-		if (grounded > 0) {
+	public override void Apply(PlayerPhysics physics, float dt) {
+		if (physics.grounded > 0) {
 			// Three accelerations for running, coasting to a stop, and countering movement
 			var target = maxSpeed * inputHorizontal;
 			var accel = acceleration;
 			if (Mathf.Abs(inputHorizontal) < 0.1f) {
 				accel = coastAcceleration;
-			} else if (inputHorizontal * velocity.x < 0f) {
+			} else if (inputHorizontal * physics.velocity.x < 0f) {
 				accel = skidAcceleration;
 				target = 0f;
 			}
-			velocity.x = Mathf.MoveTowards(velocity.x, target, accel * Time.fixedDeltaTime);
+			physics.velocity.x = Mathf.MoveTowards(physics.velocity.x, target, accel * dt);
 			
 			// Jumping gets extra height if you are moving quickly
 			if (inputJump && !hasJumped) {
-				grounded = 0f;
-				velocity.y = jumpSpeed + jumpSpeedBonus * Mathf.Abs(velocity.x) / maxSpeed;
+				physics.grounded = 0f;
+				physics.velocity.y = jumpSpeed + jumpSpeedBonus * Mathf.Abs(physics.velocity.x) / maxSpeed;
 				hasJumped = true;
 			}
 		} else {
 			// Air movement has slow h control, push down for slightly faster fall
 			var target = maxSpeed * inputHorizontal;
-			velocity.x = Mathf.MoveTowards(velocity.x, target, airAcceleration * Time.fixedDeltaTime);
-			if (inputJump && velocity.y >= 0) {
-				velocity.y += jumpFloatAcceleration * Time.fixedDeltaTime;
+			physics.velocity.x = Mathf.MoveTowards(physics.velocity.x, target, airAcceleration * dt);
+			if (inputJump && physics.velocity.y >= 0) {
+				physics.velocity.y += jumpFloatAcceleration * dt;
 			}
 			if (inputVertical < -0.5) {
-				velocity.y += inputVertical * fastFallAcceleration * Time.fixedDeltaTime;
+				physics.velocity.y += inputVertical * fastFallAcceleration * dt;
 			}
 		}
-
-		// Apply gravity and motion
-		velocity.y -= gravityAcceleration * Time.fixedDeltaTime;
-		position += (Vector3)(velocity * Time.fixedDeltaTime);
-		grounded -= Time.fixedDeltaTime;
-
-		// Check for collisions along each axis
-		var hitDown = Physics2D.BoxCast(position, new Vector2(0.5f, 0.1f), 0f, Vector2.down, 0.6f);
-		if (hitDown && velocity.y <= 0 && (hitDown.distance <= 0.45f || grounded > 0f)) {
-			position += new Vector3(0, 0.45f - hitDown.distance, 0);
-			velocity.y = 0f;
-			grounded = 0.1f;
-		}
-		var hitLeft = Physics2D.Raycast(position, Vector2.left, 0.45f);
-		if (hitLeft && velocity.x <= 0) {
-			position += new Vector3(0.45f - hitLeft.distance, 0, 0);
-			velocity.x = 0;
-		}
-		var hitRight = Physics2D.Raycast(position, Vector2.right, 0.45f);
-		if (hitRight && velocity.x >= 0) {
-			position -= new Vector3(0.45f - hitRight.distance, 0, 0);
-			velocity.x = 0;
-		}
-		var hitTop = Physics2D.Raycast(position, Vector2.up, 0.45f);
-		if (hitTop && velocity.y >= 0) {
-			position -= new Vector3(0, 0.45f - hitTop.distance, 0);
-			velocity.y = 0;
-		}
-
-		// MovePosition will do interpolation at high framerates for extra smooth rendering
-		body.MovePosition(position);
 	}
 }
