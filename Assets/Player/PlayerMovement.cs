@@ -33,7 +33,7 @@ public class PlayerMovement : PlayerPhysicsInput {
 		const float min = 0.2f;
 		var value = Input.GetAxis(name);
 		if (Mathf.Abs(value) < min) return 0.0f;
-		return Mathf.Sign(value) * (Mathf.Abs(value) - min) * (1.0f / (1.0f - min));
+		return Mathf.Sign(value) * (Mathf.Abs(value) - min) / (1.0f - min);
 	}
 	
 	// Update is called once per frame
@@ -44,7 +44,7 @@ public class PlayerMovement : PlayerPhysicsInput {
 		if (Input.GetButtonDown("Jump")) hasJumped = false;
 	}
 
-	public override void Apply(PlayerPhysics physics, float dt) {
+	override public void Apply(PlayerPhysics physics, float dt) {
 		if (physics.grounded > 0) {
 			// Three accelerations for running, coasting to a stop, and countering movement
 			var target = maxSpeed * inputHorizontal;

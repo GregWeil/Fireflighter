@@ -7,8 +7,6 @@ public abstract class PlayerPhysicsInput : MonoBehaviour {
 }
 
 public class PlayerPhysics : MonoBehaviour {
-	public PlayerPhysicsInput[] inputs = new PlayerPhysicsInput[0];
-
 	public float gravityAcceleration = 50f;
 
 	// Only used for position interpolation
@@ -28,7 +26,7 @@ public class PlayerPhysics : MonoBehaviour {
 	// FixedUpdate is called on a regular interval
 	void FixedUpdate () {
 		var position = transform.position;
-		foreach (var input in inputs) {
+		foreach (var input in GetComponents<PlayerPhysicsInput>()) {
 			input.Apply(this, Time.fixedDeltaTime);
 		}
 
