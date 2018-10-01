@@ -65,8 +65,13 @@ public class PlayerMovement : PlayerPhysicsInput {
 			}
 		} else {
 			// Air movement has slow h control, push down for slightly faster fall
-			var target = maxSpeed * inputHorizontal;
-			physics.velocity.x = Mathf.MoveTowards(physics.velocity.x, target, airAcceleration * dt);
+			if (Mathf.Abs(inputHorizontal) > 0.2f) {
+				var target = maxSpeed * Mathf.Sign(inputHorizontal);
+				var accel = airAcceleration * Mathf.Abs(inputHorizontal) * dt;
+				if (Mathf.Sign(target - physics.velocity.x) == Mathf.Sign(target)) {
+					physics.velocity.x = Mathf.MoveTowards(physics.velocity.x, target, accel);
+				}
+			}
 			if (inputJump && physics.velocity.y >= 0) {
 				physics.velocity.y += jumpFloatAcceleration * dt;
 			}

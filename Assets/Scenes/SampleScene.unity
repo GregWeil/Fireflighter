@@ -418,6 +418,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff4f972d4293e8d4aa81b985c781db2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  waterAcceleration: {x: 60, y: 40}
+  maxSpeed: 12
 --- !u!1 &282840810
 GameObject:
   m_ObjectHideFlags: 0
